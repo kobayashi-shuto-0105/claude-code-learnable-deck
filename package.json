@@ -1,0 +1,24 @@
+{
+  "name": "claude-code-learnable-deck",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fixed-round builder-critic slide deck generation pipeline for Claude Code and local Ollama models.",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "make-slides": "tsx scripts/orchestrate.ts",
+    "render": "tsx scripts/render_marp.ts",
+    "check": "tsx scripts/check_deck.ts && tsx scripts/check_render.ts",
+    "select-best": "tsx scripts/select_best_round.ts"
+  },
+  "dependencies": {
+    "dotenv": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "latest",
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  }
+}
