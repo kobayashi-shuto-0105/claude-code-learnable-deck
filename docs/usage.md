@@ -218,7 +218,8 @@ npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
 npm run make-slides -- --input examples/sample.md --deck sample50 --rounds 50
 
 # check an existing deck output
-npm run check -- --deck sample
+npx tsx scripts/check_deck.ts --deck sample
+npx tsx scripts/check_render.ts --deck sample
 
 # render current deck_spec.json to slides.md
 npm run render -- --deck sample
