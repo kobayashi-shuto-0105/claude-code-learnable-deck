@@ -3,11 +3,29 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { getArg, getNumberArg } from "../src/args.js";
 import { scoreDeck } from "../src/deck-utils.js";
-import { copyIfExists, deckPath, ensureDir, readJson, readText, writeJson, writeText, appendJsonl, nowIso } from "../src/io.js";
+import {
+  appendJsonl,
+  copyIfExists,
+  deckPath,
+  ensureDir,
+  nowIso,
+  readJson,
+  readText,
+  removeIfExists,
+  resetText,
+  writeJson,
+  writeText
+} from "../src/io.js";
 import { extractSourceToMarkdown } from "../src/input.js";
 import { resolveRoleModel } from "../src/model-config.js";
 import { getRoundPolicy } from "../src/round-policy.js";
 import { DeckSpecSchema } from "../src/schema.js";
+
+type VerifierReport = {
+  round?: number;
+  warnings?: unknown[];
+  errors?: unknown[];
+};
 
 function runScript(script: string, args: string[] = [], allowFailure = false): boolean {
   const result = spawnSync("npx", ["tsx", script, ...args], { stdio: "inherit" });
@@ -20,6 +38,25 @@ function initDirs(deckId: string): void {
   for (const dir of ["source", "working", "render", "snapshots", "final", "reports"]) {
     ensureDir(deckPath(deckId, dir));
   }
+}
+
+function resetRunArtifacts(deckId: string): void {
+  removeIfExists(deckPath(deckId, "render"));
+  removeIfExists(deckPath(deckId, "snapshots"));
+  removeIfExists(deckPath(deckId, "final"));
+  removeIfExists(deckPath(deckId, "reports"));
+
+  for (const dir of ["render", "snapshots", "final", "reports"]) {
+    ensureDir(deckPath(deckId, dir));
+  }
+
+  resetText(deckPath(deckId, "working", "builder_memory.md"), "# Builder Memory\n");
+  resetText(deckPath(deckId, "working", "professor_memory.md"), "# Professor Memory\n");
+  resetText(deckPath(deckId, "working", "critique_rounds.jsonl"));
+  resetText(deckPath(deckId, "working", "edit_plans.jsonl"));
+  resetText(deckPath(deckId, "working", "verifier_reports.jsonl"));
+  resetText(deckPath(deckId, "working", "round_scores.jsonl"));
+  resetText(deckPath(deckId, "working", "claude_runs.jsonl"));
 }
 
 function initSource(deckId: string, input: string): string {
@@ -37,6 +74,22 @@ function saveSnapshot(deckId: string, round: number): void {
   copyIfExists(deckPath(deckId, "render", "slides.pptx"), join(dir, "slides.pptx"));
 }
 
+function countVerifierWarningsForRound(deckId: string, round: number): number {
+  return readText(deckPath(deckId, "working", "verifier_reports.jsonl"))
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line) as VerifierReport;
+      } catch {
+        return null;
+      }
+    })
+    .filter((report): report is VerifierReport => Boolean(report) && report.round === round)
+    .reduce((total, report) => total + (Array.isArray(report.warnings) ? report.warnings.length : 0), 0);
+}
+
 function main() {
   const deckId = getArg("deck", "sample")!;
   const input = getArg("input", "examples/sample.md")!;
@@ -46,6 +99,7 @@ function main() {
   const slides = getNumberArg("slides", Number(process.env.LLD_TARGET_SLIDE_COUNT || 12));
 
   initDirs(deckId);
+  resetRunArtifacts(deckId);
   const extracted = initSource(deckId, input);
 
   writeJson(deckPath(deckId, "working", "run_config.json"), {
@@ -58,7 +112,10 @@ function main() {
     stop_mode: "fixed_rounds",
     max_rounds: maxRounds,
     builder_model: resolveRoleModel("builder"),
-    critic_model: resolveRoleModel("critic")
+    critic_model: resolveRoleModel("critic"),
+    use_claude: process.env.LLD_USE_CLAUDE === "1",
+    fallback_on_claude_error: process.env.LLD_CLAUDE_FALLBACK_ON_ERROR !== "0",
+    started_at: nowIso()
   });
 
   for (let round = 0; round < maxRounds; round++) {
@@ -119,10 +176,7 @@ function main() {
 
     const deck = DeckSpecSchema.parse(readJson(deckPath(deckId, "working", "deck_spec.json")));
     const scores = scoreDeck(deck, deckOk && renderOk);
-    const warnings = readText(deckPath(deckId, "working", "verifier_reports.jsonl"))
-      .split("\n")
-      .filter((line) => line.includes(`"round":${round}`) && line.includes("warnings"))
-      .length;
+    const warnings = countVerifierWarningsForRound(deckId, round);
 
     appendJsonl(deckPath(deckId, "working", "round_scores.jsonl"), {
       round,

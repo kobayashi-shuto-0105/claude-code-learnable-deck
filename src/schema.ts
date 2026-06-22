@@ -35,15 +35,12 @@ export const DeckSpecSchema = z.object({
 });
 
 export const CritiqueTypeValues = [
-  // Learning / understanding
   "missing_learning_goal",
   "missing_prerequisite",
   "undefined_term",
   "abstraction_jump",
   "missing_concrete_example",
   "missing_check_question",
-
-  // Logic / evidence
   "causal_gap",
   "mechanism_gap",
   "unsupported_claim",
@@ -51,8 +48,6 @@ export const CritiqueTypeValues = [
   "comparison_gap",
   "result_interpretation_missing",
   "limitation_missing",
-
-  // Slide design / cognitive load
   "one_message_violation",
   "too_dense",
   "split_attention",
@@ -60,8 +55,6 @@ export const CritiqueTypeValues = [
   "visual_text_mismatch",
   "chart_encoding_mismatch",
   "readability_accessibility_issue",
-
-  // Pedagogical dialogue
   "naive_student_confusion",
   "misconception_probe",
   "socratic_why_how",
@@ -76,6 +69,12 @@ export const ReviewLensValues = [
   "source_fidelity_reviewer",
   "cognitive_mirror"
 ] as const;
+
+export type CritiqueType = (typeof CritiqueTypeValues)[number];
+export type ReviewLens = (typeof ReviewLensValues)[number];
+
+const CritiqueTypeEnumValues = [...CritiqueTypeValues] as [CritiqueType, ...CritiqueType[]];
+const ReviewLensEnumValues = [...ReviewLensValues] as [ReviewLens, ...ReviewLens[]];
 
 export const ExpectedFixSchema = z.object({
   action: z.string().min(1),
@@ -95,8 +94,8 @@ export const CritiqueQuestionSchema = z.object({
   severity: z.enum(["critical", "major", "minor"]),
   slide_id: z.string().optional(),
   target_element: z.string().optional(),
-  type: z.enum(CritiqueTypeValues),
-  review_lens: z.enum(ReviewLensValues).default("strict_professor"),
+  type: z.enum(CritiqueTypeEnumValues),
+  review_lens: z.enum(ReviewLensEnumValues).default("strict_professor"),
   question: z.string().min(1),
   learner_confusion: z.string().optional(),
   evidence: CritiqueEvidenceSchema.default({}),
@@ -118,7 +117,5 @@ export const RoundScoreSchema = z.object({
 
 export type DeckSpec = z.infer<typeof DeckSpecSchema>;
 export type Slide = z.infer<typeof SlideSchema>;
-export type CritiqueType = (typeof CritiqueTypeValues)[number];
-export type ReviewLens = (typeof ReviewLensValues)[number];
 export type CritiqueQuestion = z.infer<typeof CritiqueQuestionSchema>;
 export type RoundScore = z.infer<typeof RoundScoreSchema>;

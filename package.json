@@ -8,9 +8,9 @@
     "build": "tsc --noEmit",
     "make-slides": "tsx scripts/orchestrate.ts",
     "render": "tsx scripts/render_marp.ts",
-    "check": "tsx scripts/check_deck.ts && tsx scripts/check_render.ts",
+    "check": "tsx scripts/check_all.ts",
     "select-best": "tsx scripts/select_best_round.ts",
-    "smoke": "tsx scripts/orchestrate.ts --input examples/sample.md --deck smoke --rounds 2 && tsx scripts/check_deck.ts --deck smoke && tsx scripts/check_render.ts --deck smoke"
+    "smoke": "tsx scripts/orchestrate.ts --input examples/sample.md --deck smoke --rounds 2 && tsx scripts/check_all.ts --deck smoke"
   },
   "dependencies": {
     "dotenv": "latest",
