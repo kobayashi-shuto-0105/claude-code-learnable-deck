@@ -21,70 +21,34 @@ It currently supports:
 - round snapshots
 - best-round selection
 - local Ollama model profile configuration through `.env`
-- CI typecheck and smoke test
+- CI smoke test
 
-## Setup
+## Quick start
 
 ```bash
 npm install
 cp .env.example .env
-```
-
-Edit `.env` based on your local `ollama list` output.
-
-Supported model profiles:
-
-```text
-gemma4_31b_thinking
-gpt_oss_120b
-qwen3_coder_next
-direct
-```
-
-Example:
-
-```env
-LLD_MODEL_PROFILE=qwen3_coder_next
-LLD_MODEL_QWEN3_CODER_NEXT=qwen3-coder-next
-```
-
-For gpt-oss:
-
-```env
-LLD_MODEL_PROFILE=gpt_oss_120b
-LLD_MODEL_GPT_OSS_120B=gpt-oss:120b
-```
-
-For Gemma:
-
-```env
-LLD_MODEL_PROFILE=gemma4_31b_thinking
-LLD_MODEL_GEMMA4_31B_THINKING=gemma4:31b-thinking
-```
-
-If your local Ollama tag is different, change the value in `.env`.
-
-## Run without Claude Code
-
-This uses the deterministic fallback Builder/Critic. It is useful for CI and smoke testing.
-
-```env
-LLD_USE_CLAUDE=0
-```
-
-```bash
 npm run smoke
 ```
 
-Or manually:
+This runs the deterministic fallback path and writes outputs under `outputs/smoke/`.
+
+Check the generated deck:
 
 ```bash
-npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
+cat outputs/smoke/final/slides.md
+cat outputs/smoke/reports/final_summary.md
 ```
 
 ## Run with Claude Code + local Ollama
 
-Make sure Ollama is running and Claude Code can reach the Anthropic-compatible endpoint.
+1. Make sure Ollama is running.
+
+```bash
+ollama list
+```
+
+2. Edit `.env`.
 
 ```env
 ANTHROPIC_AUTH_TOKEN=ollama
@@ -93,47 +57,78 @@ LLD_USE_CLAUDE=1
 LLD_MODEL_PROFILE=qwen3_coder_next
 ```
 
-Then run:
+3. Run a small test.
 
 ```bash
-npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
+npm run make-slides -- --input examples/sample.md --deck sample-claude --rounds 3
 ```
 
-Use a longer configured run when the small run works:
+4. Run a longer configured loop.
 
 ```bash
-npm run make-slides -- --input examples/sample.md --deck sample --rounds 50
+npm run make-slides -- --input examples/sample.md --deck sample-50 --rounds 50
 ```
 
-If Claude Code fails or returns invalid JSON, the default behavior is to fall back to deterministic local logic:
+## Model profiles
+
+Supported profiles:
+
+```text
+gemma4_31b_thinking
+gpt_oss_120b
+qwen3_coder_next
+direct
+```
+
+Example `.env` values:
 
 ```env
-LLD_CLAUDE_FALLBACK_ON_ERROR=1
+LLD_MODEL_PROFILE=qwen3_coder_next
+LLD_MODEL_QWEN3_CODER_NEXT=qwen3-coder-next
 ```
 
-Set it to `0` to stop the run on Claude errors.
+```env
+LLD_MODEL_PROFILE=gpt_oss_120b
+LLD_MODEL_GPT_OSS_120B=gpt-oss:120b
+```
+
+```env
+LLD_MODEL_PROFILE=gemma4_31b_thinking
+LLD_MODEL_GEMMA4_31B_THINKING=gemma4:31b-thinking
+```
+
+If your local Ollama tag is different, change the corresponding `LLD_MODEL_*` value in `.env`.
 
 ## Input files
 
 Markdown and text files are read directly.
 
-PDF files are supported when the optional `pdftotext` command is installed. On macOS this usually comes from poppler:
+```bash
+npm run make-slides -- --input inputs/my-note.md --deck my-note --rounds 10
+```
+
+PDF files are supported when `pdftotext` is installed.
+
+macOS:
 
 ```bash
 brew install poppler
 ```
 
-Then run:
+Ubuntu:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y poppler-utils
+```
+
+Run:
 
 ```bash
 npm run make-slides -- --input inputs/paper.pdf --deck paper --rounds 10
 ```
 
-If `pdftotext` is not available, the run still creates a clear placeholder extraction file under `outputs/<deck_id>/source/extracted.md`.
-
-## Output
-
-Outputs are written under:
+## Output layout
 
 ```text
 outputs/<deck_id>/
@@ -161,6 +156,14 @@ Important files:
 - `final/slides.md`
 - `reports/final_summary.md`
 
+## Documentation
+
+- [Usage Guide](docs/usage.md)
+- [Configuration Reference](docs/configuration.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Architecture Plan](docs/architecture-plan.md)
+- [Configured Iteration Plan](docs/configured-iteration-plan.md)
+
 ## Claude Code integration
 
 Project instructions:
@@ -176,7 +179,7 @@ Skill:
 
 - `.claude/skills/make-slides/SKILL.md`
 
-The script path now supports both modes:
+The script path supports both modes:
 
 - `LLD_USE_CLAUDE=0`: deterministic fallback
 - `LLD_USE_CLAUDE=1`: Claude Code backed Builder/Critic with fallback on error
