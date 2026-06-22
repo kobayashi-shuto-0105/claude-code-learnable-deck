@@ -32,6 +32,14 @@ The Professor Critic asks strict questions to reveal unclear reasoning, missing 
 
 The workflow should use file-backed state instead of relying only on conversation context.
 
+## Loop strategy
+
+The normal MVP should use a short bounded critique loop.
+
+The architecture also documents a later **fixed-round experiment mode** for deliberate 50/100 round runs. In that mode, an orchestration script should manage round count, snapshots, memory files, verifier reports, and best-round selection.
+
+Fixed 50/100 rounds should mean controlled file-backed iterations, not one huge Claude Code conversation.
+
 ## Planned first implementation
 
 The first implementation PR should add:
@@ -44,3 +52,5 @@ The first implementation PR should add:
 - minimal Markdown input pipeline
 - Marp renderer
 - simple critique loop with bounded rounds
+
+Full fixed-round execution should be added after the basic file-backed loop and verifier scripts are stable.
