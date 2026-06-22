@@ -6,64 +6,126 @@ The project goal is not to build a generic slide generator. The goal is to build
 
 ## Current status
 
-Planning only.
+Fixed-loop MVP scaffold is implemented.
 
-No implementation is included yet.
+It currently supports:
 
-## Current architecture direction
+- file-backed DeckSpec workflow
+- configured fixed iteration count
+- deterministic fallback Builder/Critic pipeline
+- Marp Markdown rendering
+- simple verifier scripts
+- round snapshots
+- best-round selection
+- local Ollama model profile configuration through `.env`
 
-The current direction is documented here:
+## Setup
+
+```bash
+npm install
+cp .env.example .env
+```
+
+Edit `.env` based on your local `ollama list` output.
+
+Supported model profiles:
+
+```text
+gemma4_31b_thinking
+gpt_oss_120b
+qwen3_coder_next
+direct
+```
+
+Example:
+
+```env
+LLD_MODEL_PROFILE=qwen3_coder_next
+LLD_MODEL_QWEN3_CODER_NEXT=qwen3-coder-next
+```
+
+For gpt-oss:
+
+```env
+LLD_MODEL_PROFILE=gpt_oss_120b
+LLD_MODEL_GPT_OSS_120B=gpt-oss:120b
+```
+
+For Gemma:
+
+```env
+LLD_MODEL_PROFILE=gemma4_31b_thinking
+LLD_MODEL_GEMMA4_31B_THINKING=gemma4:31b-thinking
+```
+
+If your local Ollama tag is different, change the value in `.env`.
+
+## Usage
+
+Smoke test with a small number of rounds:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
+```
+
+Default-style fixed run:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 50
+```
+
+Longer experiment:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 100
+```
+
+## Output
+
+Outputs are written under:
+
+```text
+outputs/<deck_id>/
+├─ source/
+├─ working/
+├─ render/
+├─ snapshots/
+├─ final/
+└─ reports/
+```
+
+Important files:
+
+- `working/deck_spec.json`
+- `working/run_config.json`
+- `working/run_state.json`
+- `working/critique_rounds.jsonl`
+- `working/verifier_reports.jsonl`
+- `working/round_scores.jsonl`
+- `render/slides.md`
+- `snapshots/round-xxx/`
+- `final/deck_spec.json`
+- `final/slides.md`
+- `reports/final_summary.md`
+
+## Claude Code integration
+
+Project instructions:
+
+- `CLAUDE.md`
+
+Agents:
+
+- `.claude/agents/slide-builder.md`
+- `.claude/agents/professor-critic.md`
+
+Skill:
+
+- `.claude/skills/make-slides/SKILL.md`
+
+The current scripts default to a deterministic fallback path so the scaffold can run without requiring Claude Code non-interactive execution. `.env` already contains the model profile settings needed to route future Claude Code calls to local Ollama.
+
+## Architecture docs
 
 - [Architecture Plan](docs/architecture-plan.md)
 - [Configured Iteration Plan](docs/configured-iteration-plan.md)
-
-## Core idea
-
-```text
-Slide Builder
-  ↓ creates / revises
-DeckSpec + rendered slides
-  ↑ feedback loop
-Professor Critic
-```
-
-The Slide Builder performs research, concept structuring, storyboarding, DeckSpec creation, rendering, and revision.
-
-The Professor Critic asks strict questions to reveal unclear reasoning, missing prerequisites, unsupported claims, and places where learners may get lost.
-
-The workflow should use file-backed state instead of relying only on conversation context.
-
-## Loop strategy
-
-The default workflow should use a configured fixed iteration count.
-
-Recommended initial setting:
-
-```json
-{
-  "stop_mode": "fixed_rounds",
-  "max_rounds": 50
-}
-```
-
-A longer experiment can use `max_rounds: 100`.
-
-The iteration runner should manage round count, snapshots, memory files, verifier reports, and best-round selection.
-
-Fixed rounds should mean controlled file-backed iterations, not one huge Claude Code conversation.
-
-## Planned first implementation
-
-The first implementation PR should add:
-
-- `CLAUDE.md`
-- `.claude/agents/slide-builder.md`
-- `.claude/agents/professor-critic.md`
-- `.claude/skills/make-slides/SKILL.md`
-- basic DeckSpec schema
-- minimal Markdown input pipeline
-- Marp renderer
-- configured iteration runner
-- simple verifier scripts
-- snapshot output
-- best-round selection
