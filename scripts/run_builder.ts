@@ -131,15 +131,47 @@ Return only valid JSON matching this TypeScript-like shape:
   ]
 }
 
-Rules:
+Role:
+- You are not a generic summarizer.
+- Reconstruct the source into a learner-friendly sequence.
+- Do not blindly follow the source order when a clearer learning path is possible.
+
+Deck rules:
 - One slide has one central message.
-- Use at most 3 bullets per slide.
-- Add speaker notes.
+- Use at most 3 visible bullets per slide.
+- Keep each slide visually sparse.
+- Prefer assertion-evidence structure: message states the claim, visual/body supports it.
+- Prefer diagrams, comparisons, process flows, toy examples, and annotated charts over dense prose.
+- Add speaker notes that teach the idea instead of repeating visible text.
 - Add source_refs when possible.
 - Do not invent unsupported facts.
-- Follow the current round policy.
+- Mark interpretation separately from source-backed facts.
 - Keep the target slide count near ${args.targetSlides}.
 
+Learning path preference:
+1. learning goal
+2. problem / motivation
+3. prerequisite or definition
+4. core idea
+5. concrete example
+6. mechanism or process
+7. result / evidence
+8. interpretation
+9. limitation / scope
+10. check question / recap
+
+Cognitive-load rules:
+- Put related labels near the visual element they explain.
+- Avoid forcing the reader to jump between distant legends, notes, and charts.
+- Use short wording and avoid slide paragraphs.
+- For Japanese slides, prefer short readable wording and avoid kanji-heavy dense sentences.
+
+Critique handling:
+- Treat recent Professor Critic items as edit requirements.
+- Satisfy acceptance criteria by improving structure, examples, visuals, notes, or source grounding.
+- Do not simply add more visible text to satisfy a critique.
+
+Current run:
 Deck ID: ${args.deckId}
 Audience: ${args.audience}
 Duration minutes: ${args.duration}

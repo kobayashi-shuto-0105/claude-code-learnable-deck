@@ -163,6 +163,8 @@ Important files:
 - [Troubleshooting](docs/troubleshooting.md)
 - [Architecture Plan](docs/architecture-plan.md)
 - [Configured Iteration Plan](docs/configured-iteration-plan.md)
+- [Critique Taxonomy](docs/critique-taxonomy.md)
+- [Research-grounded Prompting Guide](docs/research-grounded-prompting.md)
 
 ## Claude Code integration
 
@@ -196,10 +198,11 @@ The Professor Critic uses multiple review lenses instead of generic feedback onl
 
 Critique questions include learner confusion, observed evidence, and acceptance criteria so the Builder can convert feedback into concrete edits.
 
-See [Critique Taxonomy](docs/critique-taxonomy.md).
+See [Critique Taxonomy](docs/critique-taxonomy.md) and [Research-grounded Prompting Guide](docs/research-grounded-prompting.md).
 
 ## Architecture docs
 
 - [Architecture Plan](docs/architecture-plan.md)
 - [Configured Iteration Plan](docs/configured-iteration-plan.md)
 - [Critique Taxonomy](docs/critique-taxonomy.md)
+- [Research-grounded Prompting Guide](docs/research-grounded-prompting.md)

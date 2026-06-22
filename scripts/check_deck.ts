@@ -26,6 +26,9 @@ function main() {
       report.errors.push("deck_spec.json does not match the schema");
     } else {
       const ids = new Set<string>();
+      const deckText = parsed.data.slides
+        .map((slide) => `${slide.title} ${slide.message} ${slide.bullets.join(" ")} ${slide.speaker_notes}`)
+        .join("\n");
       const slidesWithConcreteCue = parsed.data.slides.filter((slide) =>
         /example|具体|例|case|input|output|toy|quiz|check|確認|問い/i.test(
           `${slide.title} ${slide.message} ${slide.bullets.join(" ")} ${slide.speaker_notes}`
@@ -57,6 +60,9 @@ function main() {
       }
       if (slidesWithWhyHowCue === 0) {
         report.warnings.push("deck: no why/how/mechanism cue was detected");
+      }
+      if (!/limit|limitation|scope|assumption|caveat|限界|制約|前提|適用範囲/i.test(deckText)) {
+        report.warnings.push("deck: no limitation, assumption, or scope-control cue was detected");
       }
 
       if (report.errors.length > 0) report.passed = false;
