@@ -26,26 +26,32 @@ function total(score: RoundScore): number {
   );
 }
 
+function fallbackRound(deckId: string): number {
+  const root = deckPath(deckId, "snapshots");
+  if (!existsSync(root)) return 0;
+  const last = readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith("round-"))
+    .map((entry) => entry.name)
+    .sort()
+    .at(-1);
+  return last ? Number(last.replace("round-", "")) : 0;
+}
+
 function main() {
   const deckId = getArg("deck", "sample")!;
   const scores = readScores(deckId).filter((score) => score.scores.render_pass);
-  let bestRound = scores.sort((a, b) => total(b) - total(a))[0]?.round ?? 0;
+  let bestRound = scores.sort((a, b) => total(b) - total(a))[0]?.round ?? fallbackRound(deckId);
 
-  const snapshotDir = deckPath(deckId, "snapshots", `round-${String(bestRound).padStart(3, "0")}`);
-  if (!existsSync(snapshotDir)) {
-    const snapshots = readdirSync(deckPath(deckId, "snapshots"), { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && entry.name.startsWith("round-"))
-      .map((entry) => entry.name)
-      .sort();
-    const last = snapshots.at(-1);
-    if (last) bestRound = Number(last.replace("round-", ""));
+  let source = deckPath(deckId, "snapshots", `round-${String(bestRound).padStart(3, "0")}`);
+  if (!existsSync(source)) {
+    bestRound = fallbackRound(deckId);
+    source = deckPath(deckId, "snapshots", `round-${String(bestRound).padStart(3, "0")}`);
   }
 
-  const source = deckPath(deckId, "snapshots", `round-${String(bestRound).padStart(3, "0")}`);
   copyIfExists(join(source, "deck_spec.json"), deckPath(deckId, "final", "deck_spec.json"));
-  copyIfExists(deckPath(deckId, "render", "slides.md"), deckPath(deckId, "final", "slides.md"));
-  copyIfExists(deckPath(deckId, "render", "slides.pdf"), deckPath(deckId, "final", "slides.pdf"));
-  copyIfExists(deckPath(deckId, "render", "slides.pptx"), deckPath(deckId, "final", "slides.pptx"));
+  copyIfExists(join(source, "slides.md"), deckPath(deckId, "final", "slides.md"));
+  copyIfExists(join(source, "slides.pdf"), deckPath(deckId, "final", "slides.pdf"));
+  copyIfExists(join(source, "slides.pptx"), deckPath(deckId, "final", "slides.pptx"));
 
   writeText(deckPath(deckId, "reports", "final_summary.md"), `# Final Summary\n\nSelected round: ${bestRound}\n\nSelection used configured round scores and available snapshots.\n`);
 }
