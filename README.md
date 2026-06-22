@@ -21,7 +21,7 @@ It currently supports:
 - round snapshots
 - best-round selection
 - local Ollama model profile configuration through `.env`
-- CI typecheck and smoke test
+- CI smoke test
 
 ## Quick start
 
