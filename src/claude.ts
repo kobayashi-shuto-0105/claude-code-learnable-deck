@@ -11,6 +11,11 @@ export type ClaudeRunResult = {
   model: string;
 };
 
+function toText(value: string | Buffer | null | undefined): string {
+  if (!value) return "";
+  return typeof value === "string" ? value : value.toString("utf8");
+}
+
 function extractJsonBlock(text: string): string | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
@@ -59,8 +64,8 @@ export function runClaude(role: ClaudeRole, prompt: string): ClaudeRunResult | n
 
   return {
     ok: result.status === 0,
-    stdout: result.stdout || "",
-    stderr: result.stderr || "",
+    stdout: toText(result.stdout),
+    stderr: toText(result.stderr),
     status: result.status,
     model
   };
