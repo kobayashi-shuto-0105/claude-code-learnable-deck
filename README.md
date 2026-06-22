@@ -15,6 +15,7 @@ No implementation is included yet.
 The current direction is documented here:
 
 - [Architecture Plan](docs/architecture-plan.md)
+- [Configured Iteration Plan](docs/configured-iteration-plan.md)
 
 ## Core idea
 
@@ -34,11 +35,22 @@ The workflow should use file-backed state instead of relying only on conversatio
 
 ## Loop strategy
 
-The normal MVP should use a short bounded critique loop.
+The default workflow should use a configured fixed iteration count.
 
-The architecture also documents a later **fixed-round experiment mode** for deliberate 50/100 round runs. In that mode, an orchestration script should manage round count, snapshots, memory files, verifier reports, and best-round selection.
+Recommended initial setting:
 
-Fixed 50/100 rounds should mean controlled file-backed iterations, not one huge Claude Code conversation.
+```json
+{
+  "stop_mode": "fixed_rounds",
+  "max_rounds": 50
+}
+```
+
+A longer experiment can use `max_rounds: 100`.
+
+The iteration runner should manage round count, snapshots, memory files, verifier reports, and best-round selection.
+
+Fixed rounds should mean controlled file-backed iterations, not one huge Claude Code conversation.
 
 ## Planned first implementation
 
@@ -51,6 +63,7 @@ The first implementation PR should add:
 - basic DeckSpec schema
 - minimal Markdown input pipeline
 - Marp renderer
-- simple critique loop with bounded rounds
-
-Full fixed-round execution should be added after the basic file-backed loop and verifier scripts are stable.
+- configured iteration runner
+- simple verifier scripts
+- snapshot output
+- best-round selection
