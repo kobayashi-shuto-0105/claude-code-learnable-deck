@@ -3,9 +3,9 @@ import { extname } from "node:path";
 import { spawnSync } from "node:child_process";
 import { readText, writeText } from "./io.js";
 
-function toText(value: string | Buffer | null | undefined): string {
-  if (!value) return "";
-  return typeof value === "string" ? value : value.toString("utf8");
+function toText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  return typeof value === "string" ? value : String(value);
 }
 
 function extractPdfWithPdftotext(input: string): string | null {
