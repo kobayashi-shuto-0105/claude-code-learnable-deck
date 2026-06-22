@@ -11,9 +11,9 @@ export type ClaudeRunResult = {
   model: string;
 };
 
-function toText(value: string | Buffer | null | undefined): string {
-  if (!value) return "";
-  return typeof value === "string" ? value : value.toString("utf8");
+function toText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  return typeof value === "string" ? value : String(value);
 }
 
 function extractJsonBlock(text: string): string | null {
