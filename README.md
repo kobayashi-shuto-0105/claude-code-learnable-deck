@@ -181,7 +181,22 @@ The script path now supports both modes:
 - `LLD_USE_CLAUDE=0`: deterministic fallback
 - `LLD_USE_CLAUDE=1`: Claude Code backed Builder/Critic with fallback on error
 
+## Professor Critic taxonomy
+
+The Professor Critic uses multiple review lenses instead of generic feedback only:
+
+- `naive_student`
+- `strict_professor`
+- `cognitive_load_reviewer`
+- `source_fidelity_reviewer`
+- `cognitive_mirror`
+
+Critique questions include learner confusion, observed evidence, and acceptance criteria so the Builder can convert feedback into concrete edits.
+
+See [Critique Taxonomy](docs/critique-taxonomy.md).
+
 ## Architecture docs
 
 - [Architecture Plan](docs/architecture-plan.md)
 - [Configured Iteration Plan](docs/configured-iteration-plan.md)
+- [Critique Taxonomy](docs/critique-taxonomy.md)
