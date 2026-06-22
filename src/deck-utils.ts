@@ -3,17 +3,19 @@ import type { DeckSpec, Slide } from "./schema.js";
 export function normalizeDeck(deck: DeckSpec): DeckSpec {
   return {
     ...deck,
+    language: deck.language || "ja",
     slides: deck.slides.map((slide, index) => ({
       ...slide,
       id: slide.id || `s${String(index + 1).padStart(2, "0")}`,
       bullets: slide.bullets.slice(0, 3),
-      speaker_notes: slide.speaker_notes || `Explain the central message: ${slide.message}`,
+      speaker_notes: slide.speaker_notes || (deck.language === "ja" ? `このスライドの中心メッセージを説明する: ${slide.message}` : `Explain the central message: ${slide.message}`),
       source_refs: slide.source_refs || []
     }))
   };
 }
 
-export function createSlide(id: string, title: string, message: string, bullets: string[] = []): Slide {
+export function createSlide(id: string, title: string, message: string, bullets: string[] = [], language = "ja"): Slide {
+  const isJa = language === "ja" || language === "Japanese" || language === "日本語";
   return {
     id,
     role: "content",
@@ -22,9 +24,11 @@ export function createSlide(id: string, title: string, message: string, bullets:
     bullets: bullets.slice(0, 3),
     visual: {
       type: "concept_diagram",
-      description: `A simple visual that supports: ${message}`
+      description: isJa ? `中心メッセージを支える簡単な図解: ${message}` : `A simple visual that supports: ${message}`
     },
-    speaker_notes: `Explain this slide with a concrete example. Central message: ${message}`,
+    speaker_notes: isJa
+      ? `このスライドでは具体例を使って説明する。中心メッセージ: ${message}`
+      : `Explain this slide with a concrete example. Central message: ${message}`,
     source_refs: [
       {
         section: "source",

@@ -58,19 +58,32 @@ LLD_BUILDER_MODEL_PROFILE=qwen3_coder_next
 LLD_CRITIC_MODEL_PROFILE=gpt_oss_120b
 ```
 
-## Loop defaults
+## Loop and output defaults
 
 | Variable | Default | Meaning |
 |---|---:|---|
 | `LLD_DEFAULT_MAX_ROUNDS` | `50` | Default configured loop count when `--rounds` is omitted. |
-| `LLD_TARGET_SLIDE_COUNT` | `12` | Target slide count. |
-| `LLD_AUDIENCE` | `information science undergraduate` | Default target audience. |
+| `LLD_OUTPUT_LANGUAGE` | `ja` | Output language for slide titles, messages, bullets, visuals, and speaker notes. |
+| `LLD_TARGET_SLIDE_COUNT` | `auto` | Auto slide count when empty or `auto`. Set a number only when you want to force a target. |
+| `LLD_AUDIENCE` | `日本語で学ぶセキュリティエンジニア` | Default target audience. |
 | `LLD_DURATION_MINUTES` | `15` | Default deck duration. |
 
 CLI flags override these defaults:
 
 ```bash
-npm run make-slides -- --input examples/sample.md --deck sample --rounds 10 --slides 8 --duration 7 --audience "beginner engineer"
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 10 --duration 7 --audience "セキュリティ初学者"
+```
+
+To force a specific slide target, pass `--slides` explicitly:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 10 --slides 8
+```
+
+To use English output:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample-en --rounds 3 --language en --audience "beginner engineers"
 ```
 
 ## Input / rendering
@@ -86,6 +99,8 @@ npm run make-slides -- --input examples/sample.md --deck sample --rounds 10 --sl
 
 ```env
 LLD_USE_CLAUDE=0
+LLD_OUTPUT_LANGUAGE=ja
+LLD_TARGET_SLIDE_COUNT=auto
 LLD_RUN_MARP_EXPORT=0
 ```
 
@@ -95,6 +110,8 @@ LLD_RUN_MARP_EXPORT=0
 ANTHROPIC_AUTH_TOKEN=ollama
 ANTHROPIC_BASE_URL=http://localhost:11434
 LLD_USE_CLAUDE=1
+LLD_OUTPUT_LANGUAGE=ja
+LLD_TARGET_SLIDE_COUNT=auto
 LLD_MODEL_PROFILE=qwen3_coder_next
 LLD_MODEL_QWEN3_CODER_NEXT=qwen3-coder-next
 ```
@@ -105,6 +122,8 @@ LLD_MODEL_QWEN3_CODER_NEXT=qwen3-coder-next
 ANTHROPIC_AUTH_TOKEN=ollama
 ANTHROPIC_BASE_URL=http://localhost:11434
 LLD_USE_CLAUDE=1
+LLD_OUTPUT_LANGUAGE=ja
+LLD_TARGET_SLIDE_COUNT=auto
 LLD_MODEL_PROFILE=gpt_oss_120b
 LLD_MODEL_GPT_OSS_120B=gpt-oss:120b
 ```
@@ -115,6 +134,8 @@ LLD_MODEL_GPT_OSS_120B=gpt-oss:120b
 ANTHROPIC_AUTH_TOKEN=ollama
 ANTHROPIC_BASE_URL=http://localhost:11434
 LLD_USE_CLAUDE=1
+LLD_OUTPUT_LANGUAGE=ja
+LLD_TARGET_SLIDE_COUNT=auto
 LLD_MODEL_PROFILE=gemma4_31b_thinking
 LLD_MODEL_GEMMA4_31B_THINKING=gemma4:31b-thinking
 ```

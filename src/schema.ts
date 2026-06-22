@@ -29,8 +29,9 @@ export const DeckSpecSchema = z.object({
   title: z.string().min(1),
   audience: z.string().min(1),
   goal: z.string().min(1),
+  language: z.string().default("ja"),
   duration_minutes: z.number().int().positive().default(15),
-  target_slide_count: z.number().int().positive().default(12),
+  target_slide_count: z.number().int().positive().optional(),
   slides: z.array(SlideSchema).min(1)
 });
 

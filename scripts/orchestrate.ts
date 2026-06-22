@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
-import { getArg, getNumberArg } from "../src/args.js";
+import { getArg, getNumberArg, getOptionalNumberArg } from "../src/args.js";
 import { scoreDeck } from "../src/deck-utils.js";
 import {
   appendJsonl,
@@ -90,13 +90,22 @@ function countVerifierWarningsForRound(deckId: string, round: number): number {
     .reduce((total, report) => total + (Array.isArray(report.warnings) ? report.warnings.length : 0), 0);
 }
 
+function envOptionalNumber(name: string): number | undefined {
+  const value = process.env[name];
+  if (!value || value === "auto") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function main() {
   const deckId = getArg("deck", "sample")!;
   const input = getArg("input", "examples/sample.md")!;
   const maxRounds = getNumberArg("rounds", Number(process.env.LLD_DEFAULT_MAX_ROUNDS || 50));
-  const audience = getArg("audience", process.env.LLD_AUDIENCE || "information science undergraduate")!;
+  const language = getArg("language", process.env.LLD_OUTPUT_LANGUAGE || "ja")!;
+  const audience = getArg("audience", process.env.LLD_AUDIENCE || "日本語で学ぶセキュリティエンジニア")!;
   const duration = getNumberArg("duration", Number(process.env.LLD_DURATION_MINUTES || 15));
-  const slides = getNumberArg("slides", Number(process.env.LLD_TARGET_SLIDE_COUNT || 12));
+  const slidesArg = getOptionalNumberArg("slides");
+  const slides = slidesArg ?? envOptionalNumber("LLD_TARGET_SLIDE_COUNT");
 
   initDirs(deckId);
   resetRunArtifacts(deckId);
@@ -107,8 +116,10 @@ function main() {
     input,
     extracted,
     audience,
+    language,
     duration_minutes: duration,
-    target_slide_count: slides,
+    target_slide_count: slides ?? null,
+    slide_count_mode: slides ? "fixed" : "auto",
     stop_mode: "fixed_rounds",
     max_rounds: maxRounds,
     builder_model: resolveRoleModel("builder"),
@@ -130,15 +141,17 @@ function main() {
       completed: false
     });
 
-    runScript("scripts/run_builder.ts", [
+    const builderArgs = [
       "--deck", deckId,
       "--input", extracted,
       "--round", String(round),
       "--max-rounds", String(maxRounds),
       "--audience", audience,
-      "--duration", String(duration),
-      "--slides", String(slides)
-    ]);
+      "--language", language,
+      "--duration", String(duration)
+    ];
+    if (slides) builderArgs.push("--slides", String(slides));
+    runScript("scripts/run_builder.ts", builderArgs);
 
     writeJson(deckPath(deckId, "working", "run_state.json"), {
       deck_id: deckId,

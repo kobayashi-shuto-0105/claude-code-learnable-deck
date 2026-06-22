@@ -12,6 +12,13 @@ export function getNumberArg(name: string, fallback: number): number {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+export function getOptionalNumberArg(name: string): number | undefined {
+  const value = getArg(name);
+  if (!value || value === "auto") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 export function hasFlag(name: string): boolean {
   return process.argv.includes(`--${name}`);
 }

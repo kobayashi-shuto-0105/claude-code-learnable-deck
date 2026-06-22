@@ -2,6 +2,8 @@
 
 This guide explains how to run Claude Code Learnable Deck locally.
 
+By default, generated slides are Japanese and the slide count is automatic.
+
 ## 1. Install
 
 ```bash
@@ -22,7 +24,7 @@ npm run smoke
 Manual equivalent:
 
 ```bash
-npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 3 --language ja
 ```
 
 Check the result:
@@ -46,10 +48,12 @@ Edit `.env`:
 ANTHROPIC_AUTH_TOKEN=ollama
 ANTHROPIC_BASE_URL=http://localhost:11434
 LLD_USE_CLAUDE=1
+LLD_OUTPUT_LANGUAGE=ja
+LLD_TARGET_SLIDE_COUNT=auto
 LLD_MODEL_PROFILE=qwen3_coder_next
 ```
 
-Then run a small test:
+Then run a small test. Do not pass `--slides` unless you want to force a target count.
 
 ```bash
 npm run make-slides -- --input examples/sample.md --deck sample-claude --rounds 3
@@ -95,7 +99,35 @@ LLD_MODEL_GEMMA4_31B_THINKING=gemma4:31b-thinking
 
 If your `ollama list` output uses a different tag, change the corresponding `LLD_MODEL_*` value.
 
-## 5. Use role-specific models
+## 5. Language and slide count
+
+Default output language:
+
+```env
+LLD_OUTPUT_LANGUAGE=ja
+```
+
+Default slide count mode:
+
+```env
+LLD_TARGET_SLIDE_COUNT=auto
+```
+
+With auto mode, the Builder chooses the number of slides from source complexity and duration.
+
+Force a specific slide count only when needed:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample-8 --rounds 3 --slides 8
+```
+
+Use English output only when needed:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample-en --rounds 3 --language en --audience "beginner engineers"
+```
+
+## 6. Use role-specific models
 
 You can use different local models for Builder and Critic.
 
@@ -107,7 +139,7 @@ LLD_CRITIC_MODEL_PROFILE=gpt_oss_120b
 
 Leave the role-specific values empty to use `LLD_MODEL_PROFILE` for both roles.
 
-## 6. Markdown input
+## 7. Markdown input
 
 Create an input file:
 
@@ -128,7 +160,7 @@ Run:
 npm run make-slides -- --input inputs/my-note.md --deck transformer --rounds 10
 ```
 
-## 7. PDF input
+## 8. PDF input
 
 PDF text extraction uses the optional `pdftotext` command.
 
@@ -153,7 +185,7 @@ npm run make-slides -- --input inputs/paper.pdf --deck paper --rounds 10
 
 If `pdftotext` is not installed, the command still creates `outputs/<deck_id>/source/extracted.md` with a clear placeholder message.
 
-## 8. Output layout
+## 9. Output layout
 
 ```text
 outputs/<deck_id>/
@@ -187,7 +219,17 @@ cat outputs/<deck_id>/working/run_config.json
 cat outputs/<deck_id>/working/claude_runs.jsonl
 ```
 
-## 9. Optional PDF/PPTX export through Marp
+`run_config.json` should show:
+
+```json
+{
+  "language": "ja",
+  "slide_count_mode": "auto",
+  "target_slide_count": null
+}
+```
+
+## 10. Optional PDF/PPTX export through Marp
 
 By default, the renderer writes `slides.md` only.
 
@@ -205,17 +247,20 @@ npm run make-slides -- --input examples/sample.md --deck sample-export --rounds 
 
 Generated export files depend on the local Marp/Chromium environment.
 
-## 10. Common commands
+## 11. Common commands
 
 ```bash
 # deterministic fallback smoke test
 npm run smoke
 
-# 3-round local test
+# 3-round Japanese auto-slide test
 npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
 
 # 50-round configured run
 npm run make-slides -- --input examples/sample.md --deck sample50 --rounds 50
+
+# force 8 slides only when needed
+npm run make-slides -- --input examples/sample.md --deck sample8 --rounds 3 --slides 8
 
 # check an existing deck output
 npx tsx scripts/check_deck.ts --deck sample
