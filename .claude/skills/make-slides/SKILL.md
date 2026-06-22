@@ -1,6 +1,6 @@
 ---
 name: make-slides
-description: Generate a learner-friendly slide deck using the configured fixed-round Builder/Critic loop.
+description: Generate a learner-friendly Japanese slide deck using the configured fixed-round Builder/Critic loop.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -17,6 +17,12 @@ Smoke test:
 ```bash
 npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
 ```
+
+Defaults:
+
+- Output language: Japanese (`LLD_OUTPUT_LANGUAGE=ja`)
+- Slide count: auto (`LLD_TARGET_SLIDE_COUNT=auto`)
+- Do not pass `--slides` unless the user explicitly asks for a fixed slide count.
 
 Workflow:
 
