@@ -1,10 +1,10 @@
 import "dotenv/config";
-import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { getArg, getNumberArg } from "../src/args.js";
 import { scoreDeck } from "../src/deck-utils.js";
 import { copyIfExists, deckPath, ensureDir, readJson, readText, writeJson, writeText, appendJsonl, nowIso } from "../src/io.js";
+import { extractSourceToMarkdown } from "../src/input.js";
 import { resolveRoleModel } from "../src/model-config.js";
 import { getRoundPolicy } from "../src/round-policy.js";
 import { DeckSpecSchema } from "../src/schema.js";
@@ -24,11 +24,7 @@ function initDirs(deckId: string): void {
 
 function initSource(deckId: string, input: string): string {
   const extracted = deckPath(deckId, "source", "extracted.md");
-  if (existsSync(input)) {
-    writeText(extracted, readText(input));
-  } else if (!existsSync(extracted)) {
-    writeText(extracted, `# Missing input\n\nInput path was not found: ${input}\n`);
-  }
+  extractSourceToMarkdown(input, extracted);
   return extracted;
 }
 

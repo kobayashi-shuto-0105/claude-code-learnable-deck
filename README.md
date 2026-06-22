@@ -6,18 +6,22 @@ The project goal is not to build a generic slide generator. The goal is to build
 
 ## Current status
 
-Fixed-loop MVP scaffold is implemented.
+Fixed-loop MVP is implemented.
 
 It currently supports:
 
 - file-backed DeckSpec workflow
 - configured fixed iteration count
+- Claude Code backed Builder/Critic execution when `LLD_USE_CLAUDE=1`
 - deterministic fallback Builder/Critic pipeline
 - Marp Markdown rendering
+- optional Marp PDF/PPTX export
+- optional PDF text extraction through `pdftotext`
 - simple verifier scripts
 - round snapshots
 - best-round selection
 - local Ollama model profile configuration through `.env`
+- CI typecheck and smoke test
 
 ## Setup
 
@@ -60,25 +64,72 @@ LLD_MODEL_GEMMA4_31B_THINKING=gemma4:31b-thinking
 
 If your local Ollama tag is different, change the value in `.env`.
 
-## Usage
+## Run without Claude Code
 
-Smoke test with a small number of rounds:
+This uses the deterministic fallback Builder/Critic. It is useful for CI and smoke testing.
+
+```env
+LLD_USE_CLAUDE=0
+```
+
+```bash
+npm run smoke
+```
+
+Or manually:
 
 ```bash
 npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
 ```
 
-Default-style fixed run:
+## Run with Claude Code + local Ollama
+
+Make sure Ollama is running and Claude Code can reach the Anthropic-compatible endpoint.
+
+```env
+ANTHROPIC_AUTH_TOKEN=ollama
+ANTHROPIC_BASE_URL=http://localhost:11434
+LLD_USE_CLAUDE=1
+LLD_MODEL_PROFILE=qwen3_coder_next
+```
+
+Then run:
+
+```bash
+npm run make-slides -- --input examples/sample.md --deck sample --rounds 3
+```
+
+Use a longer configured run when the small run works:
 
 ```bash
 npm run make-slides -- --input examples/sample.md --deck sample --rounds 50
 ```
 
-Longer experiment:
+If Claude Code fails or returns invalid JSON, the default behavior is to fall back to deterministic local logic:
+
+```env
+LLD_CLAUDE_FALLBACK_ON_ERROR=1
+```
+
+Set it to `0` to stop the run on Claude errors.
+
+## Input files
+
+Markdown and text files are read directly.
+
+PDF files are supported when the optional `pdftotext` command is installed. On macOS this usually comes from poppler:
 
 ```bash
-npm run make-slides -- --input examples/sample.md --deck sample --rounds 100
+brew install poppler
 ```
+
+Then run:
+
+```bash
+npm run make-slides -- --input inputs/paper.pdf --deck paper --rounds 10
+```
+
+If `pdftotext` is not available, the run still creates a clear placeholder extraction file under `outputs/<deck_id>/source/extracted.md`.
 
 ## Output
 
@@ -96,12 +147,14 @@ outputs/<deck_id>/
 
 Important files:
 
+- `source/extracted.md`
 - `working/deck_spec.json`
 - `working/run_config.json`
 - `working/run_state.json`
 - `working/critique_rounds.jsonl`
 - `working/verifier_reports.jsonl`
 - `working/round_scores.jsonl`
+- `working/claude_runs.jsonl`
 - `render/slides.md`
 - `snapshots/round-xxx/`
 - `final/deck_spec.json`
@@ -123,7 +176,10 @@ Skill:
 
 - `.claude/skills/make-slides/SKILL.md`
 
-The current scripts default to a deterministic fallback path so the scaffold can run without requiring Claude Code non-interactive execution. `.env` already contains the model profile settings needed to route future Claude Code calls to local Ollama.
+The script path now supports both modes:
+
+- `LLD_USE_CLAUDE=0`: deterministic fallback
+- `LLD_USE_CLAUDE=1`: Claude Code backed Builder/Critic with fallback on error
 
 ## Architecture docs
 
